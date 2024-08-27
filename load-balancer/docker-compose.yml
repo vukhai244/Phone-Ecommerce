@@ -1,0 +1,17 @@
+version: '3.5'
+
+services:
+  load-balancer:
+    container_name: load-balancer
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: load-balancer
+    ports:
+      - '${APP_PORT}:${APP_PORT}'
+    networks:
+      - spring-microservice
+
+networks:
+  spring-microservice:
+    external: true

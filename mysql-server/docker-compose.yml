@@ -1,0 +1,23 @@
+version: '3.5'
+
+services:
+  mysql-server:
+    image: mysql:8.0.37
+    container_name: mysql-8.0.37
+
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "${MYSQL_PORT}:${MYSQL_PORT}"
+    volumes:
+      - ./store/mysql:/var/lib/mysql
+      - ./init/phone_ecommerce_db.sql:/docker-entrypoint-initdb.d/phone_ecommerce_db.sql
+    networks:
+      - spring-microservice
+
+networks:
+  spring-microservice:
+    external: true

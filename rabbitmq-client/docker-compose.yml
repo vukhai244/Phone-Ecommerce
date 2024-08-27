@@ -1,0 +1,19 @@
+version: '3.5'
+
+services:
+  rabbitmq-client:
+    container_name: rabbitmq-client
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: rabbitmq-client
+    ports:
+      - '${APP_PORT}:${APP_PORT}'
+    environment:
+      - SPRING_CLOUD_CONFIG_URI=${SPRING_CLOUD_CONFIG_URI}
+    networks:
+      - spring-microservice
+
+networks:
+  spring-microservice:
+    external: true

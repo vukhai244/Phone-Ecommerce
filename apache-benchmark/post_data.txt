@@ -1,0 +1,10 @@
+{
+    "userId": 5,
+    "shippingAddress": "Ha Noi",
+    "items": [
+        {
+            "phoneId": 5,
+            "quantity": 3
+        }
+    ]
+}

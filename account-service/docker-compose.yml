@@ -1,0 +1,19 @@
+version: '3.5'
+
+services:
+  account-service:
+    container_name: account-service
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: account-service
+    ports:
+      - '${APP_PORT}:${APP_PORT}'
+    environment:
+      - SPRING_CLOUD_CONFIG_URI=${SPRING_CLOUD_CONFIG_URI}
+    networks:
+      - spring-microservice
+
+networks:
+  spring-microservice:
+    external: true

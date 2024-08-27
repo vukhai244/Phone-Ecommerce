@@ -1,0 +1,32 @@
+spring:
+    application:
+        name: api-gateway
+    cloud:
+        gateway:
+            discovery:
+                locator:
+                    enabled: true
+                    lower-case-service-id: true
+            routes:
+                - id: phone-service
+                  uri: http://phone-service:8081
+                  predicates:
+                    - Path=/api/v1/phone/**
+                - id: account-service
+                  uri: http://account-service:8083
+                  predicates:
+                    - Path=/api/v1/accounts/**
+                - id: load-balancer
+                  uri: http://load-balancer:8000
+                  predicates:
+                    - Path=/consumer-order/**
+                - id: cart-service
+                  uri: http://cart-service:8082
+                  predicates:
+                    - Path=/api/v1/cart/**
+server:
+    port: ${APP_PORT:8762}
+eureka:
+    client:
+        service-url:
+            defaultZone: http://eureka-server:8761/eureka/

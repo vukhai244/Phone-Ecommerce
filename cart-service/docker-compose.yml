@@ -1,0 +1,19 @@
+version: '3.5'
+
+services:
+  cart-service:
+    container_name: cart-service
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: cart-service
+    ports:
+      - '${APP_PORT}:${APP_PORT}'
+    environment:
+      - SPRING_CLOUD_CONFIG_URI=${SPRING_CLOUD_CONFIG_URI}
+    networks:
+      - spring-microservice
+
+networks:
+  spring-microservice:
+    external: true

@@ -1,0 +1,17 @@
+version: '3.5'
+
+services:
+  api-gateway:
+    container_name: api-gateway
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: api-gateway
+    ports:
+      - '${APP_PORT}:${APP_PORT}'
+    networks:
+      - spring-microservice
+
+networks:
+  spring-microservice:
+    external: true
