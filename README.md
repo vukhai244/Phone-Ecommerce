@@ -1,4 +1,4 @@
-# E-Commerce Phone System Using Microservices
+# E-Commerce Phone System Using Microservice
 
 ## Introduction
 This project is an e-commerce platform designed for selling phones. The system is built using a microservices architecture to ensure scalability, flexibility, and maintainability. Each service is responsible for a specific domain, making the system modular and easier to develop, deploy, and maintain.
