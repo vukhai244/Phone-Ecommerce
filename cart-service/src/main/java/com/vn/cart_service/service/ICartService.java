@@ -4,10 +4,10 @@ import com.vn.cart_service.dto.CartDTO;
 
 public interface ICartService {
 
-    void addItemToCart(Long userId, Long phoneId, int quantity);
+    void addItemToCart(String userId, String phoneId, int quantity);
 
-    void removeItemFromCart(Long userId, Long phoneId);
+    void removeItemFromCart(String userId, String phoneId);
 
-    CartDTO getCart(Long userId);
+    CartDTO getCart(String userId);
 
 }

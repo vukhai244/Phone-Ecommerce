@@ -1,24 +1,25 @@
 package com.vn.phone_ecommerce.service;
 
-import com.vn.phone_ecommerce.dto.PhoneDTO;
-import com.vn.phone_ecommerce.entity.Phone;
+import com.vn.phone_ecommerce.dto.request.PhoneCreationRequest;
+import com.vn.phone_ecommerce.dto.request.PhoneUpdateRequest;
+import com.vn.phone_ecommerce.dto.response.PhoneResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface IPhoneService {
-    Page<PhoneDTO> getAllPhone(Pageable pageable);
+    Page<PhoneResponseDTO> getAllPhone(Pageable pageable);
 
-    void addPhone(Phone phone);
+    void addPhone(PhoneCreationRequest phoneCreationRequest);
 
-    void updatePhone(Phone phone);
+    void updatePhone(String id, PhoneUpdateRequest phoneUpdateRequest);
 
-    void deletePhone(Long id);
+    void deletePhone(String id);
 
-    Phone getPhoneById(Long id);
+    PhoneResponseDTO getPhoneById(String id);
 
-    List<Phone> getAllPhoneByName(String name);
+    List<PhoneResponseDTO> getAllPhoneByName(String name);
 
-    void updatePhoneStock(Long id, int stockQuantity);
+    void updatePhoneStock(String id, int stockQuantity);
 }

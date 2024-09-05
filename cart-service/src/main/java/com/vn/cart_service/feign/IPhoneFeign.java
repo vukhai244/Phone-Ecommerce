@@ -10,7 +10,7 @@ import java.util.List;
 @FeignClient(name = "phone-service", url = "${phone.service.url}")
 public interface IPhoneFeign {
     @GetMapping("/{id}")
-    PhoneDTO getPhoneById(@PathVariable("id") Long id);
+    PhoneDTO getPhoneById(@PathVariable("id") String id);
 
     @GetMapping()
     List<PhoneDTO> getAllPhones();

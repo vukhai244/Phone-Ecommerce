@@ -17,12 +17,12 @@ import java.util.List;
 
 public class Cart {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "cart_id")
-    private Long id;
+    private String id;
 
     @Column(name = "user_id")
-    private Long userId;
+    private String userId;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

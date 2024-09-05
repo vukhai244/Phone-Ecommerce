@@ -3,6 +3,7 @@ package com.vn.cart_service.controller;
 import com.vn.cart_service.dto.CartDTO;
 import com.vn.cart_service.service.ICartService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,25 +11,29 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/cart")
 public class CartController {
 
-    @Autowired
     private ICartService cartService;
 
-    @PostMapping("/add")
-    public ResponseEntity<Void> addItemToCart(@RequestParam Long userId, @RequestParam Long phoneId,
-            @RequestParam int quantity) {
-        cartService.addItemToCart(userId, phoneId, quantity);
-        return ResponseEntity.ok().build();
+    @Autowired
+    public CartController(ICartService cartService) {
+        this.cartService = cartService;
     }
 
-    @DeleteMapping("/remove")
-    public ResponseEntity<Void> removeItemFromCart(@RequestParam Long userId, @RequestParam Long phoneId) {
+    @PostMapping
+    public ResponseEntity<String> addItemToCart(@RequestParam String userId, @RequestParam String phoneId,
+            @RequestParam int quantity) {
+        cartService.addItemToCart(userId, phoneId, quantity);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Product successfully added to cart");
+    }
+
+    @DeleteMapping
+    public ResponseEntity<String> removeItemFromCart(@RequestParam String userId, @RequestParam String phoneId) {
         cartService.removeItemFromCart(userId, phoneId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Quickly remove product from cart");
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<CartDTO> getCart(@PathVariable Long userId) {
-        CartDTO cartDTO = cartService.getCart(userId);
-        return ResponseEntity.ok(cartDTO);
+    public CartDTO getCart(@PathVariable String userId) {
+        return cartService.getCart(userId);
+
     }
 }

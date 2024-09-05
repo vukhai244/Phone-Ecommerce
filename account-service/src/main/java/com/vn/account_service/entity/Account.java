@@ -15,15 +15,15 @@ import java.time.LocalDateTime;
 public class Account {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "user_id")
-    private Long id;
+    private String id;
 
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
     @Column(name = "user_name", nullable = false, unique = true)
-    private String name;
+    private String userName;
 
     @Column(name = "password", nullable = false)
     private String password;
@@ -40,12 +40,6 @@ public class Account {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
-
-    // Getters and setters
-
-    public enum Role {
-        CUSTOMER, ADMIN
-    }
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

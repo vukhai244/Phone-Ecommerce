@@ -11,8 +11,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "phone", indexes = {
-        @Index(name = "idx_product_code", columnList = "phone_code"),
-        @Index(name = "idx_category", columnList = "category_id")
+        @Index(name = "idx_product_code", columnList = "phone_code")
 })
 @NoArgsConstructor
 @Getter
@@ -20,15 +19,18 @@ import java.util.Set;
 public class Phone {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "phone_id")
-    private Long id;
+    private String id;
 
     @Column(name = "phone_code", length = 50, nullable = false, unique = true)
     private String code;
 
     @Column(name = "phone_name", nullable = false)
     private String name;
+
+    @Column(name = "image_urls", columnDefinition = "TEXT")
+    private String imageUrls;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
@@ -44,10 +46,6 @@ public class Phone {
 
     @Column(name = "stock_quantity", nullable = false)
     private int stockQuantity;
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "phone_category", joinColumns = @JoinColumn(name = "phone_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
-    private Set<Categories> categories = new HashSet<>();
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -65,5 +63,8 @@ public class Phone {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    @OneToMany(mappedBy = "phone")
+    private Set<PhoneCategory> categories = new HashSet<>();
 
 }

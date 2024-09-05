@@ -17,7 +17,7 @@ public class Order {
     @Id
     private String id;
 
-    private Long userId;
+    private String userId;
     private Date orderDate;
     private int totalAmount;
     private String status;

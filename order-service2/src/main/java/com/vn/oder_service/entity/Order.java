@@ -17,12 +17,12 @@ import java.util.List;
 
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "order_id")
-    private Long id;
+    private String id;
 
     @Column(name = "user_id")
-    private Long userId;
+    private String userId;
 
     @Column(name = "order_date", nullable = false)
     private Date orderDate;

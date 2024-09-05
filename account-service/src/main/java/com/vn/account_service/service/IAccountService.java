@@ -1,17 +1,24 @@
 package com.vn.account_service.service;
 
+import com.vn.account_service.dto.request.UserCreationRequest;
+import com.vn.account_service.dto.request.UserUpdateRequest;
 import com.vn.account_service.entity.Account;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 public interface IAccountService {
-    List<Account> getAllAccount();
+    Page<Account> getAllAccount(Pageable pageable);
 
-    void registerAccount(Account account);
+    void createAccount(UserCreationRequest userCreationRequest);
 
-    void deleteAccount(String name);
+    void deleteAccount(String userId);
 
-    Account getUserById(Long id);
+    Account getUserById(String id);
 
     List<String> getAllEmails();
+
+    Account updateAccount(String userId, UserUpdateRequest userUpdateRequest);
 }

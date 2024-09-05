@@ -1,6 +1,11 @@
 package com.vn.oder_service.service;
 
 import com.vn.oder_service.dto.*;
+import com.vn.oder_service.dto.request.OrderItemRequestDTO;
+import com.vn.oder_service.dto.request.OrderRequestDTO;
+import com.vn.oder_service.dto.request.OrderUpdateDTO;
+import com.vn.oder_service.dto.response.OrderItemResponseDTO;
+import com.vn.oder_service.dto.response.OrderResponseDTO;
 import com.vn.oder_service.entity.Order;
 import com.vn.oder_service.entity.OrderItem;
 import com.vn.oder_service.feign.IAccountFeign;
@@ -116,7 +121,7 @@ public class OrderService implements IOrderService {
 
     }
 
-    private void updateInventoryInRedis(Long phoneId, int quantityOrdered) {
+    private void updateInventoryInRedis(String phoneId, int quantityOrdered) {
         // Lấy thông tin tồn kho từ Redis
         System.out.println("Order quantity ***************************" + quantityOrdered);
 
@@ -189,7 +194,7 @@ public class OrderService implements IOrderService {
         return responseDTO;
     }
 
-    public OrderResponseDTO getOrder(Long id) {
+    public OrderResponseDTO getOrder(String id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         return convertToResponseDTO(order);
@@ -208,7 +213,7 @@ public class OrderService implements IOrderService {
     }
 
     @Transactional
-    public OrderResponseDTO updateOrder(Long id, OrderUpdateDTO orderUpdate) {
+    public OrderResponseDTO updateOrder(String id, OrderUpdateDTO orderUpdate) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         order.setShippingAddress(orderUpdate.getShippingAddress());
@@ -217,7 +222,7 @@ public class OrderService implements IOrderService {
     }
 
     @Transactional
-    public OrderResponseDTO cancelOrder(Long id) {
+    public OrderResponseDTO cancelOrder(String id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         order.setStatus("CANCELLED");
@@ -225,14 +230,14 @@ public class OrderService implements IOrderService {
         return convertToResponseDTO(cancelledOrder);
     }
 
-    public String getOrderStatus(Long id) {
+    public String getOrderStatus(String id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         return order.getStatus();
     }
 
     @Transactional
-    public OrderResponseDTO updateOrderStatus(Long id, String newStatus) {
+    public OrderResponseDTO updateOrderStatus(String id, String newStatus) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         order.setStatus(newStatus);

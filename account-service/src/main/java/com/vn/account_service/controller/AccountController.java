@@ -1,9 +1,14 @@
 package com.vn.account_service.controller;
 
+import com.vn.account_service.dto.request.UserCreationRequest;
+import com.vn.account_service.dto.request.UserUpdateRequest;
 import com.vn.account_service.entity.Account;
-import com.vn.account_service.exception.AccountNotFoundException;
-import com.vn.account_service.exception.UsernameAlreadyExistsException;
 import com.vn.account_service.service.IAccountService;
+
+import jakarta.validation.Valid;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,38 +26,32 @@ public class AccountController {
     }
 
     @GetMapping
-    public List<Account> getAllAccounts() {
-        return accountService.getAllAccount();
+    public Page<Account> getAllAccout(Pageable pageable) {
+        return accountService.getAllAccount(pageable);
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<String> registerAccount(@RequestBody Account account) {
-        try {
-            accountService.registerAccount(account);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (UsernameAlreadyExistsException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
+    @PostMapping
+    public ResponseEntity<String> createAccount(@Valid @RequestBody UserCreationRequest userCreationRequest) {
+        accountService.createAccount(userCreationRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Account created successfully");
     }
 
-    @DeleteMapping("/delete/{name}")
-    public ResponseEntity<String> deleteAccount(@PathVariable String name) {
-        try {
-            accountService.deleteAccount(name);
-            return ResponseEntity.noContent().build();
-        } catch (AccountNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+    @PutMapping("/{userId}")
+    public ResponseEntity<String> updateAccount(@Valid @PathVariable String userId,
+            @RequestBody UserUpdateRequest userUpdateRequest) {
+        accountService.updateAccount(userId, userUpdateRequest);
+        return ResponseEntity.ok("Update");
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<String> deleteAccount(@PathVariable String userId) {
+        accountService.deleteAccount(userId);
+        return ResponseEntity.ok("Account deleted successfully");
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Account> getUserById(@PathVariable Long id) {
-        try {
-            Account account = accountService.getUserById(id);
-            return ResponseEntity.ok(account);
-        } catch (AccountNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+    public Account getUserById(@PathVariable String id) {
+        return accountService.getUserById(id);
     }
 
     @GetMapping("/emails")

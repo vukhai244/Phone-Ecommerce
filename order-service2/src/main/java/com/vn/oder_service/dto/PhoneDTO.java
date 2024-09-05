@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PhoneDTO {
-    private Long id;
+    private String id;
     private int price;
     private int stockQuantity;
 }

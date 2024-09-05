@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 public class CartDTO {
-    private Long id;
+    private String id;
     private AccountDTO userId;
     private List<CartItemDTO> items;
 }
