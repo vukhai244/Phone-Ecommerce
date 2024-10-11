@@ -1,4 +1,4 @@
-package com.vn.account_service.dto.request;
+package com.vn.account_service.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AuthenticationRequest {
-    private String userName;
-    private String password;
+public class IntrospectResponse {
+    private boolean valid;
+
 }

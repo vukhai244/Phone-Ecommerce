@@ -2,6 +2,7 @@ package com.vn.account_service.service;
 
 import com.vn.account_service.dto.request.UserCreationRequest;
 import com.vn.account_service.dto.request.UserUpdateRequest;
+import com.vn.account_service.dto.response.UserResponse;
 import com.vn.account_service.entity.Account;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public interface IAccountService {
 
     void deleteAccount(String userId);
 
-    Account getUserById(String id);
+    UserResponse getUserById(String id);
 
     List<String> getAllEmails();
 

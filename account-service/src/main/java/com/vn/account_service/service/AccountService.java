@@ -1,12 +1,15 @@
 package com.vn.account_service.service;
 
-import com.vn.account_service.exception.EmailAlreadyExistsException;
 import com.vn.account_service.dto.request.UserCreationRequest;
 import com.vn.account_service.dto.request.UserUpdateRequest;
+import com.vn.account_service.dto.response.UserResponse;
 import com.vn.account_service.entity.Account;
-import com.vn.account_service.exception.AccountNotFoundException;
+import com.vn.account_service.enums.Role;
+import com.vn.account_service.exception.AccountException;
 import com.vn.account_service.exception.DatabaseException;
-import com.vn.account_service.exception.UsernameAlreadyExistsException;
+import com.vn.account_service.exception.EmailException;
+import com.vn.account_service.exception.ErrorCode;
+import com.vn.account_service.exception.UsernameException;
 import com.vn.account_service.repository.IAccountRepository;
 
 import org.modelmapper.ModelMapper;
@@ -17,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +33,9 @@ public class AccountService implements IAccountService {
     private ModelMapper modelMapper;
 
     @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
     public AccountService(IAccountRepository accountRepository) {
         this.accountRepository = accountRepository;
     }
@@ -39,7 +46,7 @@ public class AccountService implements IAccountService {
             return accountRepository.findAll(pageable);
 
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
@@ -48,28 +55,31 @@ public class AccountService implements IAccountService {
         try {
             accountRepository.findByUserName(userCreationRequest.getUserName())
                     .ifPresent(existingAccount -> {
-                        throw new UsernameAlreadyExistsException(
-                                "Username '" + userCreationRequest.getUserName() + "' already exists!");
+                        throw new UsernameException(
+                                ErrorCode.USER_EXISTED);
                     });
 
             accountRepository.findByEmail(userCreationRequest.getEmail())
                     .ifPresent(existingAccount -> {
-                        throw new EmailAlreadyExistsException(
-                                "Email '" + userCreationRequest.getEmail() + "' already exists!");
+                        throw new EmailException(
+                                ErrorCode.EMAIL_EXISTED);
                     });
 
             Account account = modelMapper.map(userCreationRequest, Account.class);
 
-            PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
             account.setPassword(passwordEncoder.encode(userCreationRequest.getPassword()));
+
+            HashSet<String> role = new HashSet<>();
+            role.add(Role.USER.name());
+            account.setRole(role);
 
             accountRepository.save(account);
 
-        } catch (UsernameAlreadyExistsException | EmailAlreadyExistsException e) {
+        } catch (UsernameException | EmailException e) {
             throw e;
 
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
@@ -78,29 +88,30 @@ public class AccountService implements IAccountService {
         try {
 
             Account account = accountRepository.findById(userId)
-                    .orElseThrow(() -> new AccountNotFoundException("Account with id '" + userId + "' not found"));
+                    .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_FOUND));
 
             accountRepository.delete(account);
 
-        } catch (AccountNotFoundException e) {
+        } catch (AccountException e) {
             throw e;
 
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
     @Override
-    public Account getUserById(String id) {
+    public UserResponse getUserById(String id) {
         try {
-            return accountRepository.findById(id)
-                    .orElseThrow(() -> new AccountNotFoundException("Account with id " + id + " not found"));
+            Account account = accountRepository.findById(id)
+                    .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_FOUND));
+            return modelMapper.map(account, UserResponse.class);
 
-        } catch (AccountNotFoundException e) {
+        } catch (RuntimeException e) {
             throw e;
 
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
@@ -112,14 +123,15 @@ public class AccountService implements IAccountService {
                     .map(Account::getEmail)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new DatabaseException("Database error: Unable to retrieve emails.");
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
     @Override
     public Account updateAccount(String userId, UserUpdateRequest userUpdateRequest) {
         try {
-            Account account = getUserById(userId);
+            Account account = accountRepository.findById(userId)
+                    .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_FOUND));
             modelMapper.map(userUpdateRequest, account);
 
             if (userUpdateRequest.getPassword() != null && !userUpdateRequest.getPassword().isEmpty()) {
@@ -129,11 +141,11 @@ public class AccountService implements IAccountService {
 
             return accountRepository.save(account);
 
-        } catch (AccountNotFoundException e) {
+        } catch (AccountException e) {
             throw e;
 
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 }

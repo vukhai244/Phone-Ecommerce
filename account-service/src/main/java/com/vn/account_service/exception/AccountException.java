@@ -5,11 +5,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class DatabaseException extends RuntimeException {
+public class AccountException extends RuntimeException {
 
     private ErrorCode errorCode;
 
-    public DatabaseException(ErrorCode errorCode) {
+    public AccountException(ErrorCode errorCode) {
         super(errorCode.getMessage());
         this.errorCode = errorCode;
     }

@@ -1,8 +1,7 @@
 package com.vn.account_service.dto.request;
 
 import java.time.LocalDateTime;
-
-import com.vn.account_service.entity.Role;
+import java.util.Set;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -37,7 +36,7 @@ public class UserCreationRequest {
 
     private String address;
 
-    private Role role;
+    private Set<String> role;
 
     private LocalDateTime createdAt;
 

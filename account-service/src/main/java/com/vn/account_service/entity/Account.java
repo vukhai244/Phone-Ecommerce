@@ -1,17 +1,22 @@
 package com.vn.account_service.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "account")
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Account {
 
     @Id
@@ -37,9 +42,8 @@ public class Account {
     @Column(name = "address")
     private String address;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
+    @Column(name = "role", nullable = false)
+    private Set<String> role;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

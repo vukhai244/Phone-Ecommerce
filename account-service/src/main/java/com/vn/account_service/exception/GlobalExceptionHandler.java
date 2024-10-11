@@ -7,31 +7,79 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.vn.account_service.dto.response.ApiResponse;
+
+import ch.qos.logback.core.spi.ErrorCodes;
+
 import java.util.HashMap;
 import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(value = AccountNotFoundException.class)
-    ResponseEntity<String> handleAccountNotFoundException(AccountNotFoundException e) {
+    @ExceptionHandler(value = RuntimeException.class)
+    public ResponseEntity<ApiResponse> handleRuntimeException(RuntimeException e) {
+        ApiResponse apiResponse = new ApiResponse<>();
+        apiResponse.setCode(1001);
+        apiResponse.setMessage(e.getMessage());
         return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
+                .badRequest()
+                .body(apiResponse);
     }
 
-    @ExceptionHandler(UsernameAlreadyExistsException.class)
-    public ResponseEntity<String> handleUsernameAlreadyExistsException(UsernameAlreadyExistsException e) {
+    @ExceptionHandler(value = UsernameException.class)
+    public ResponseEntity<ApiResponse> handleUsernameException(UsernameException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        ApiResponse apiResponse = new ApiResponse<>();
+        apiResponse.setCode(errorCode.getCode());
+        apiResponse.setMessage(errorCode.getMessage());
+        return ResponseEntity
+                .badRequest()
+                .body(apiResponse);
+    }
+
+    @ExceptionHandler(value = EmailException.class)
+    public ResponseEntity<ApiResponse> handleEmailException(EmailException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        ApiResponse apiResponse = new ApiResponse<>();
+        apiResponse.setCode(errorCode.getCode());
+        apiResponse.setMessage(errorCode.getMessage());
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(e.getMessage());
+                .body(apiResponse);
     }
 
-    @ExceptionHandler(DatabaseException.class)
-    public ResponseEntity<String> handleDatabaseException(DatabaseException e) {
+    @ExceptionHandler(value = DatabaseException.class)
+    public ResponseEntity<ApiResponse> handleDatabaseException(DatabaseException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        ApiResponse apiResponse = new ApiResponse<>();
+        apiResponse.setCode(errorCode.getCode());
+        apiResponse.setMessage(errorCode.getMessage());
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(e.getMessage());
+                .body(apiResponse);
+    }
+
+    @ExceptionHandler(value = AccountException.class)
+    public ResponseEntity<ApiResponse> handleAccountException(AccountException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        ApiResponse apiResponse = new ApiResponse<>();
+        apiResponse.setCode(errorCode.getCode());
+        apiResponse.setMessage(errorCode.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(apiResponse);
+    }
+
+    @ExceptionHandler(value = AuthException.class)
+    public ResponseEntity<ApiResponse> handleAuthException(AuthException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        ApiResponse apiResponse = new ApiResponse<>();
+        apiResponse.setCode(errorCode.getCode());
+        apiResponse.setMessage(errorCode.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(apiResponse);
     }
 
     @ExceptionHandler(Exception.class)
