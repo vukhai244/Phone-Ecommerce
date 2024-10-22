@@ -7,8 +7,9 @@ import com.vn.phone_ecommerce.dto.response.PhoneResponseDTO;
 import com.vn.phone_ecommerce.entity.Category;
 import com.vn.phone_ecommerce.entity.Phone;
 import com.vn.phone_ecommerce.entity.PhoneCategory;
-import com.vn.phone_ecommerce.exception.CategoryNotFoundException;
+import com.vn.phone_ecommerce.exception.CategoryException;
 import com.vn.phone_ecommerce.exception.DatabaseException;
+import com.vn.phone_ecommerce.exception.ErrorCode;
 import com.vn.phone_ecommerce.repository.ICategoryRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ public class CategoryService implements ICategoryService {
     public List<PhoneResponseDTO> getPhonesByCategoryId(String categoryId) {
         try {
             Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new CategoryNotFoundException("Category not found with ID: " + categoryId));
+                    .orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_EXISTED));
 
             List<Phone> phones = category.getPhones().stream()
                     .map(PhoneCategory::getPhone)
@@ -38,11 +39,11 @@ public class CategoryService implements ICategoryService {
             return phones.stream()
                     .map(phone -> modelMapper.map(phone, PhoneResponseDTO.class))
                     .collect(Collectors.toList());
-        } catch (CategoryNotFoundException e) {
+        } catch (CategoryException e) {
             throw e;
 
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
@@ -71,7 +72,7 @@ public class CategoryService implements ICategoryService {
                     })
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
@@ -84,16 +85,15 @@ public class CategoryService implements ICategoryService {
 
             if (categoryCreationRequest.getParentId() != null) {
                 Category parentCategory = categoryRepository.findById(categoryCreationRequest.getParentId())
-                        .orElseThrow(() -> new CategoryNotFoundException(
-                                "Parent category not found with ID: " + categoryCreationRequest.getParentId()));
+                        .orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_EXISTED));
                 category.setParentCategory(parentCategory);
             }
 
             categoryRepository.save(category);
-        } catch (CategoryNotFoundException e) {
+        } catch (CategoryException e) {
             throw e;
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
@@ -101,14 +101,14 @@ public class CategoryService implements ICategoryService {
     public void deleteCategory(String id) {
         try {
             Category category = categoryRepository.findById(id)
-                    .orElseThrow(() -> new CategoryNotFoundException("Category not found with ID: " + id));
+                    .orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_EXISTED));
 
             categoryRepository.delete(category);
 
-        } catch (CategoryNotFoundException e) {
+        } catch (CategoryException e) {
             throw e;
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
@@ -116,15 +116,14 @@ public class CategoryService implements ICategoryService {
     public void updateCategory(String id, CategoryUpdateRequest categoryUpdateRequest) {
         try {
             Category category = categoryRepository.findById(id)
-                    .orElseThrow(() -> new CategoryNotFoundException("Category not found with ID: " + id));
+                    .orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_EXISTED));
 
             category.setName(categoryUpdateRequest.getName());
             category.setDescription(categoryUpdateRequest.getDescription());
 
             if (categoryUpdateRequest.getParentId() != null) {
                 Category parentCategory = categoryRepository.findById(categoryUpdateRequest.getParentId())
-                        .orElseThrow(() -> new CategoryNotFoundException(
-                                "Parent category not found with ID: " + categoryUpdateRequest.getParentId()));
+                        .orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_EXISTED));
                 category.setParentCategory(parentCategory);
             } else {
                 category.setParentCategory(null);
@@ -132,10 +131,10 @@ public class CategoryService implements ICategoryService {
 
             categoryRepository.save(category);
 
-        } catch (CategoryNotFoundException e) {
+        } catch (CategoryException e) {
             throw e;
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 }

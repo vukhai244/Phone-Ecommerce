@@ -8,11 +8,24 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class PhoneDTO {
-    private String id;
     private String code;
     private String name;
+    private String imageUrls;
     private String description;
     private int price;
     private String brand;
     private String model;
+
+    @Override
+    public String toString() {
+        return "PhoneDTO{" +
+                ", name='" + code + '\'' +
+                ", name='" + name + '\'' +
+                ", name='" + imageUrls + '\'' +
+                ", name='" + description + '\'' +
+                ", name='" + price + '\'' +
+                ", name='" + brand + '\'' +
+                ", price=" + model +
+                '}';
+    }
 }

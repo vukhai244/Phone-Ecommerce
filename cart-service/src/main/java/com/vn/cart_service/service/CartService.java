@@ -1,24 +1,32 @@
 package com.vn.cart_service.service;
 
 import com.vn.cart_service.dto.AccountDTO;
-import com.vn.cart_service.dto.CartDTO;
-import com.vn.cart_service.dto.CartItemDTO;
 import com.vn.cart_service.dto.PhoneDTO;
+import com.vn.cart_service.dto.request.AddItemRequest;
+import com.vn.cart_service.dto.request.DeleteItemRequest;
+import com.vn.cart_service.dto.response.ApiResponse;
+import com.vn.cart_service.dto.response.CartItemResponse;
+import com.vn.cart_service.dto.response.CartResponse;
 import com.vn.cart_service.entity.Cart;
 import com.vn.cart_service.entity.CartItem;
-import com.vn.cart_service.exception.AccountNotFoundException;
-import com.vn.cart_service.exception.CartNotFoundException;
+import com.vn.cart_service.exception.UserException;
+import com.vn.cart_service.exception.CartException;
 import com.vn.cart_service.exception.DatabaseException;
-import com.vn.cart_service.exception.PhoneNotFoundException;
+import com.vn.cart_service.exception.ErrorCode;
+import com.vn.cart_service.exception.PhoneException;
 import com.vn.cart_service.feign.IAccountFeign;
 import com.vn.cart_service.feign.IPhoneFeign;
 import com.vn.cart_service.repository.ICartRepository;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class CartService implements ICartService {
 
     @Autowired
@@ -31,87 +39,90 @@ public class CartService implements ICartService {
     private IAccountFeign accountFeign;
 
     @Override
-    public void addItemToCart(String userId, String phoneId, int quantity) {
+    public void addItemToCart(AddItemRequest addItemRequest) {
         try {
-            Cart cart = cartRepository.findByUserId(userId).orElseGet(() -> {
+            Cart cart = cartRepository.findByUserId(addItemRequest.getUserId()).orElseGet(() -> {
                 Cart newCart = new Cart();
-                newCart.setUserId(userId);
+                newCart.setUserId(addItemRequest.getUserId());
                 return cartRepository.save(newCart);
             });
 
             CartItem cartItem = cart.getItems().stream()
-                    .filter(item -> item.getPhoneId().equals(phoneId))
+                    .filter(item -> item.getPhoneId().equals(addItemRequest.getPhoneId()))
                     .findFirst()
                     .orElseGet(() -> {
                         CartItem newItem = new CartItem();
-                        newItem.setPhoneId(phoneId);
+                        newItem.setPhoneId(addItemRequest.getPhoneId());
                         newItem.setCartId(cart);
                         cart.getItems().add(newItem);
                         return newItem;
                     });
 
-            cartItem.setQuantity(cartItem.getQuantity() + quantity);
+            cartItem.setQuantity(cartItem.getQuantity() + addItemRequest.getQuantity());
             cartRepository.save(cart);
 
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
     @Override
-    public void removeItemFromCart(String userId, String phoneId) {
+    public void removeItemFromCart(DeleteItemRequest deleteItemRequest) {
         try {
-            Cart cart = cartRepository.findByUserId(userId)
-                    .orElseThrow(() -> new CartNotFoundException("Cart not found for userId: " + userId));
+            Cart cart = cartRepository.findByUserId(deleteItemRequest.getUserId())
+                    .orElseThrow(() -> new CartException(ErrorCode.CART_NOT_EXISTED));
             if (cart != null) {
-                cart.getItems().removeIf(item -> item.getPhoneId().equals(phoneId));
+                cart.getItems().removeIf(item -> item.getPhoneId().equals(deleteItemRequest.getPhoneId()));
                 cartRepository.save(cart);
             }
-        } catch (CartNotFoundException e) {
+        } catch (CartException e) {
             throw e;
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
     @Override
-    public CartDTO getCart(String userId) {
+    public CartResponse getCart(String userId) {
         try {
             Cart cart = cartRepository.findByUserId(userId)
-                    .orElseThrow(() -> new CartNotFoundException("Cart not found for userId: " + userId));
+                    .orElseThrow(() -> new CartException(ErrorCode.CART_NOT_EXISTED));
 
             if (cart == null) {
                 return null;
             }
 
-            AccountDTO user = accountFeign.getUserById(userId);
+            AccountDTO user = accountFeign.getUserById(userId)
+                    .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_EXISTED));
+            ;
 
-            if (user == null) {
-                throw new AccountNotFoundException("User not found with ID: " + userId);
-            }
+            CartResponse cartResponse = CartResponse.builder()
+                    .items(cart.getItems().stream()
+                            .map(item -> {
+                                ApiResponse<PhoneDTO> phoneResponse = phoneFeign.getPhoneById(item.getPhoneId());
+                                log.info("Fetching phone details for phoneId: {}", item.getPhoneId());
+                                if (phoneResponse.getCode() != 1000 || phoneResponse.getResult() == null) {
+                                    throw new PhoneException(ErrorCode.PHONE_NOT_EXISTED);
+                                }
+                                PhoneDTO phone = phoneResponse.getResult();
+                                log.info("Phone details: {}", phone);
+                                CartItemResponse cartItemResponse = CartItemResponse.builder()
+                                        .id(item.getId())
+                                        .phone(phone)
+                                        .quantity(item.getQuantity())
+                                        .build();
 
-            CartDTO cartDTO = new CartDTO();
-            cartDTO.setId(cart.getId());
-            cartDTO.setUserId(user);
-            cartDTO.setItems(cart.getItems().stream()
-                    .map(item -> {
-                        PhoneDTO phone = phoneFeign.getPhoneById(item.getPhoneId());
-                        if (phone == null) {
-                            throw new PhoneNotFoundException("Phone not found with ID: " + item.getPhoneId());
-                        }
-                        CartItemDTO cartItemDTO = new CartItemDTO();
-                        cartItemDTO.setId(item.getId());
-                        cartItemDTO.setPhone(phone);
-                        cartItemDTO.setQuantity(item.getQuantity());
-                        return cartItemDTO;
-                    })
-                    .collect(Collectors.toList()));
-            return cartDTO;
+                                return cartItemResponse;
+                            })
+                            .collect(Collectors.toList()))
+                    .build();
 
-        } catch (CartNotFoundException | AccountNotFoundException | PhoneNotFoundException e) {
+            return cartResponse;
+
+        } catch (CartException | UserException | PhoneException e) {
             throw e;
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 }

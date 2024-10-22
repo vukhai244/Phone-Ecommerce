@@ -2,6 +2,7 @@ package com.vn.phone_ecommerce.controller;
 
 import com.vn.phone_ecommerce.dto.request.PhoneCreationRequest;
 import com.vn.phone_ecommerce.dto.request.PhoneUpdateRequest;
+import com.vn.phone_ecommerce.dto.response.ApiResponse;
 import com.vn.phone_ecommerce.dto.response.PhoneResponseDTO;
 import com.vn.phone_ecommerce.service.IPhoneService;
 
@@ -26,32 +27,38 @@ public class PhoneController {
     }
 
     @GetMapping
-    public Page<PhoneResponseDTO> getAllPhone(Pageable pageable) {
-        return phoneService.getAllPhone(pageable);
+    public ApiResponse<Page<PhoneResponseDTO>> getAllPhone(Pageable pageable) {
+        ApiResponse<Page<PhoneResponseDTO>> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(phoneService.getAllPhone(pageable));
+        return apiResponse;
     }
 
     @GetMapping("/{id}")
-    public PhoneResponseDTO getPhoneById(@PathVariable String id) {
-        return phoneService.getPhoneById(id);
+    public ApiResponse<PhoneResponseDTO> getPhoneById(@PathVariable String id) {
+        ApiResponse<PhoneResponseDTO> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(phoneService.getPhoneById(id));
+        return apiResponse;
 
     }
 
     @GetMapping("/search/{name}")
-    public List<PhoneResponseDTO> getAllPhoneByName(@PathVariable(name = "name") String name) {
-        return phoneService.getAllPhoneByName(name);
+    public ApiResponse<List<PhoneResponseDTO>> getAllPhoneByName(@PathVariable(name = "name") String name) {
+        ApiResponse<List<PhoneResponseDTO>> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(phoneService.getAllPhoneByName(name));
+        return apiResponse;
     }
 
     @PostMapping
     public ResponseEntity<String> addPhone(@Valid @RequestBody PhoneCreationRequest phoneCreationRequest) {
         phoneService.addPhone(phoneCreationRequest);
-        return new ResponseEntity<>("Created", HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Phone created successfully");
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<String> addPhone(@Valid @PathVariable String id,
             @RequestBody PhoneUpdateRequest phoneUpdateRequest) {
         phoneService.updatePhone(id, phoneUpdateRequest);
-        return new ResponseEntity<>("Update", HttpStatus.OK);
+        return ResponseEntity.ok("Phone update successfully");
     }
 
     @DeleteMapping("/{id}")

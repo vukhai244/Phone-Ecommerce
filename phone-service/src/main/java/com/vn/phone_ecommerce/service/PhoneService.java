@@ -7,10 +7,10 @@ import com.vn.phone_ecommerce.entity.Category;
 import com.vn.phone_ecommerce.entity.Phone;
 import com.vn.phone_ecommerce.entity.PhoneCategory;
 import com.vn.phone_ecommerce.entity.PhoneCategoryId;
-import com.vn.phone_ecommerce.exception.CategoryNotFoundException;
+import com.vn.phone_ecommerce.exception.CategoryException;
 import com.vn.phone_ecommerce.exception.DatabaseException;
-import com.vn.phone_ecommerce.exception.PhoneAlreadyExistsException;
-import com.vn.phone_ecommerce.exception.PhoneNotFoundException;
+import com.vn.phone_ecommerce.exception.ErrorCode;
+import com.vn.phone_ecommerce.exception.PhoneException;
 import com.vn.phone_ecommerce.repository.ICategoryRepository;
 import com.vn.phone_ecommerce.repository.IPhoneCategoryRepository;
 import com.vn.phone_ecommerce.repository.IPhoneRepository;
@@ -66,7 +66,7 @@ public class PhoneService implements IPhoneService {
             return new PageImpl<>(phoneResponseDTOs, pageable, phones.getTotalElements());
 
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
@@ -74,7 +74,7 @@ public class PhoneService implements IPhoneService {
     public PhoneResponseDTO getPhoneById(String id) {
         try {
             Phone phone = phoneRepository.findById(id)
-                    .orElseThrow(() -> new PhoneNotFoundException("Phone not found with ID: " + id));
+                    .orElseThrow(() -> new PhoneException(ErrorCode.PHONE_NOT_EXISTED));
             PhoneResponseDTO phoneDTO = modelMapper.map(phone, PhoneResponseDTO.class);
 
             List<String> categoryIds = phone.getCategories().stream()
@@ -85,11 +85,11 @@ public class PhoneService implements IPhoneService {
 
             return phoneDTO;
 
-        } catch (PhoneNotFoundException e) {
+        } catch (PhoneException e) {
             throw e;
 
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
@@ -98,7 +98,7 @@ public class PhoneService implements IPhoneService {
         try {
             List<Phone> phones = phoneRepository.findAllByName(name);
             if (phones.isEmpty()) {
-                throw new PhoneNotFoundException("Phone not found with name: " + name);
+                throw new PhoneException(ErrorCode.PHONE_NOT_EXISTED);
             }
             return phones.stream()
                     .map(phone -> {
@@ -114,11 +114,11 @@ public class PhoneService implements IPhoneService {
                     })
                     .collect(Collectors.toList());
 
-        } catch (PhoneNotFoundException e) {
+        } catch (PhoneException e) {
             throw e;
 
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
@@ -127,8 +127,7 @@ public class PhoneService implements IPhoneService {
         try {
             phoneRepository.findByCode(phoneCreationRequest.getCode())
                     .ifPresent(existingPhone -> {
-                        throw new PhoneAlreadyExistsException(
-                                "Phone '" + phoneCreationRequest.getCode() + "' already exists!");
+                        throw new PhoneException(ErrorCode.PHONE_EXISTED);
                     });
 
             Phone phone = modelMapper.map(phoneCreationRequest, Phone.class);
@@ -137,8 +136,7 @@ public class PhoneService implements IPhoneService {
             if (phoneCreationRequest.getCategoryIds() != null && !phoneCreationRequest.getCategoryIds().isEmpty()) {
                 for (String categoryId : phoneCreationRequest.getCategoryIds()) {
                     Category category = categoryRepository.findById(categoryId)
-                            .orElseThrow(() -> new CategoryNotFoundException(
-                                    "Category with id " + categoryId + " not found"));
+                            .orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_EXISTED));
 
                     PhoneCategory phoneCategory = new PhoneCategory();
                     PhoneCategoryId phoneCategoryId = new PhoneCategoryId();
@@ -153,12 +151,12 @@ public class PhoneService implements IPhoneService {
                 }
             }
 
-        } catch (PhoneAlreadyExistsException e) {
+        } catch (PhoneException e) {
             throw e;
-        } catch (CategoryNotFoundException e) {
+        } catch (CategoryException e) {
             throw e;
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
@@ -169,10 +167,10 @@ public class PhoneService implements IPhoneService {
                 Phone phone = modelMapper.map(phoneUpdateRequest, Phone.class);
                 phoneRepository.save(phone);
             } else {
-                throw new PhoneNotFoundException("Phone not found with ID: " + id);
+                throw new PhoneException(ErrorCode.CATEGORY_NOT_EXISTED);
             }
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
@@ -182,10 +180,10 @@ public class PhoneService implements IPhoneService {
             if (phoneRepository.existsById(id)) {
                 phoneRepository.deleteById(id);
             } else {
-                throw new PhoneNotFoundException("Phone not found with ID: " + id);
+                throw new PhoneException(ErrorCode.PHONE_NOT_EXISTED);
             }
         } catch (Exception e) {
-            throw new DatabaseException("Database error: " + e.getMessage());
+            throw new DatabaseException(ErrorCode.DATABASE_EXCEPTION);
         }
     }
 
@@ -197,7 +195,7 @@ public class PhoneService implements IPhoneService {
             phone.setStockQuantity(stockQuantity);
             phoneRepository.save(phone);
         } else {
-            throw new PhoneNotFoundException("Phone not found with ID: " + id);
+            throw new PhoneException(ErrorCode.PHONE_NOT_EXISTED);
         }
     }
 }

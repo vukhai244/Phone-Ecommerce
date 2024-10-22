@@ -7,51 +7,87 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.github.andrewoma.dexx.collection.HashMap;
+import com.github.andrewoma.dexx.collection.Map;
+import com.vn.phone_ecommerce.dto.response.ApiResponse;
+
+import java.util.Date;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(value = PhoneNotFoundException.class)
-    ResponseEntity<String> handlePhoneNotFoundException(PhoneNotFoundException e) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
-    }
+        @ExceptionHandler(value = Exception.class)
+        public ResponseEntity<ApiResponse> handleException(Exception e) {
+                ApiResponse apiResponse = ApiResponse.builder()
+                                .code(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode())
+                                .message(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage())
+                                .build();
 
-    @ExceptionHandler(PhoneAlreadyExistsException.class)
-    public ResponseEntity<String> handlePhoneAlreadyExistsException(PhoneAlreadyExistsException e) {
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body("Phone already exists: " + e.getMessage());
-    }
+                return ResponseEntity
+                                .badRequest()
+                                .body(apiResponse);
+        }
 
-    @ExceptionHandler(DatabaseException.class)
-    public ResponseEntity<String> handleDatabaseException(DatabaseException e) {
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(e.getMessage());
-    }
+        @ExceptionHandler(value = CategoryException.class)
+        public ResponseEntity<ApiResponse> handleCategoryException(CategoryException e) {
+                ErrorCode errorCode = e.getErrorCode();
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGenericException(Exception e) {
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("An unexpected error occurred: " + e.getMessage());
-    }
+                ApiResponse apiResponse = ApiResponse.builder()
+                                .code(errorCode.getCode())
+                                .message(errorCode.getMessage())
+                                .build();
 
-    @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(errors);
-    }
+                return ResponseEntity
+                                .status(errorCode.getStatusCode())
+                                .body(apiResponse);
+        }
+
+        @ExceptionHandler(value = PhoneException.class)
+        public ResponseEntity<ApiResponse> handlePhoneException(PhoneException e) {
+                ErrorCode errorCode = e.getErrorCode();
+
+                ApiResponse apiResponse = ApiResponse.builder()
+                                .code(errorCode.getCode())
+                                .message(errorCode.getMessage())
+                                .build();
+
+                return ResponseEntity
+                                .status(errorCode.getStatusCode())
+                                .body(apiResponse);
+        }
+
+        @ExceptionHandler(value = DatabaseException.class)
+        public ResponseEntity<ApiResponse> handleDatabaseException(DatabaseException e) {
+                ErrorCode errorCode = e.getErrorCode();
+
+                ApiResponse apiResponse = ApiResponse.builder()
+                                .code(errorCode.getCode())
+                                .message(errorCode.getMessage())
+                                .build();
+
+                return ResponseEntity
+                                .status(errorCode.getStatusCode())
+                                .body(apiResponse);
+        }
+
+        @ExceptionHandler(MethodArgumentNotValidException.class)
+        public ResponseEntity<Object> handleValidationExceptions(
+                        MethodArgumentNotValidException ex) {
+                Map<String, String> errors = new HashMap<>();
+
+                ex.getBindingResult().getAllErrors().forEach((error) -> {
+                        String fieldName = ((FieldError) error).getField();
+                        String errorMessage = error.getDefaultMessage();
+                        errors.put(fieldName, errorMessage);
+                });
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("timestamp", new Date());
+                response.put("status", HttpStatus.BAD_REQUEST.value());
+                response.put("errors", errors);
+
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
 
 }

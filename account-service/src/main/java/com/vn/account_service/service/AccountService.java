@@ -88,7 +88,7 @@ public class AccountService implements IAccountService {
         try {
 
             Account account = accountRepository.findById(userId)
-                    .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_FOUND));
+                    .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_EXISTED));
 
             accountRepository.delete(account);
 
@@ -104,7 +104,7 @@ public class AccountService implements IAccountService {
     public UserResponse getUserById(String id) {
         try {
             Account account = accountRepository.findById(id)
-                    .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_FOUND));
+                    .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_EXISTED));
             return modelMapper.map(account, UserResponse.class);
 
         } catch (RuntimeException e) {
@@ -131,7 +131,7 @@ public class AccountService implements IAccountService {
     public Account updateAccount(String userId, UserUpdateRequest userUpdateRequest) {
         try {
             Account account = accountRepository.findById(userId)
-                    .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_FOUND));
+                    .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_EXISTED));
             modelMapper.map(userUpdateRequest, account);
 
             if (userUpdateRequest.getPassword() != null && !userUpdateRequest.getPassword().isEmpty()) {

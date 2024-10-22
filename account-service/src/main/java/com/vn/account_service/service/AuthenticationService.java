@@ -33,7 +33,6 @@ import com.vn.account_service.repository.IAccountRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
-import lombok.experimental.var;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.MACVerifier;
 

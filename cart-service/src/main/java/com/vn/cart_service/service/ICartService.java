@@ -1,13 +1,15 @@
 package com.vn.cart_service.service;
 
-import com.vn.cart_service.dto.CartDTO;
+import com.vn.cart_service.dto.request.AddItemRequest;
+import com.vn.cart_service.dto.request.DeleteItemRequest;
+import com.vn.cart_service.dto.response.CartResponse;
 
 public interface ICartService {
 
-    void addItemToCart(String userId, String phoneId, int quantity);
+    void addItemToCart(AddItemRequest addItemRequest);
 
-    void removeItemFromCart(String userId, String phoneId);
+    void removeItemFromCart(DeleteItemRequest deleteItemRequest);
 
-    CartDTO getCart(String userId);
+    CartResponse getCart(String userId);
 
 }

@@ -10,7 +10,9 @@ import java.util.List;
 @Getter
 @Setter
 public class PhoneResponseDTO {
+    private String code;
     private String name;
+    private String imageUrls;
     private String description;
     private int price;
     private String brand;

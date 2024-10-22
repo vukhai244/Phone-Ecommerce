@@ -1,6 +1,9 @@
 package com.vn.cart_service.controller;
 
-import com.vn.cart_service.dto.CartDTO;
+import com.vn.cart_service.dto.request.AddItemRequest;
+import com.vn.cart_service.dto.request.DeleteItemRequest;
+import com.vn.cart_service.dto.response.ApiResponse;
+import com.vn.cart_service.dto.response.CartResponse;
 import com.vn.cart_service.service.ICartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,21 +22,22 @@ public class CartController {
     }
 
     @PostMapping
-    public ResponseEntity<String> addItemToCart(@RequestParam String userId, @RequestParam String phoneId,
-            @RequestParam int quantity) {
-        cartService.addItemToCart(userId, phoneId, quantity);
+    public ResponseEntity<String> addItemToCart(@RequestBody AddItemRequest addItemRequest) {
+        cartService.addItemToCart(addItemRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body("Product successfully added to cart");
     }
 
     @DeleteMapping
-    public ResponseEntity<String> removeItemFromCart(@RequestParam String userId, @RequestParam String phoneId) {
-        cartService.removeItemFromCart(userId, phoneId);
+    public ResponseEntity<String> removeItemFromCart(@RequestBody DeleteItemRequest deleteItemRequest) {
+        cartService.removeItemFromCart(deleteItemRequest);
         return ResponseEntity.ok("Quickly remove product from cart");
     }
 
     @GetMapping("/{userId}")
-    public CartDTO getCart(@PathVariable String userId) {
-        return cartService.getCart(userId);
+    public ApiResponse<CartResponse> getCart(@PathVariable String userId) {
+        ApiResponse<CartResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(cartService.getCart(userId));
+        return apiResponse;
 
     }
 }
